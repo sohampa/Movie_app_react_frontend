@@ -7,7 +7,7 @@ on:
 
 env:
   DOCKERHUB_REPO: sohampa/php-frontend-laravel
-  IMAGE_TAG: v2   # ✅ Fixed tag
+  IMAGE_TAG: v3   # ✅ Fixed tag
 
 jobs:
   build-and-push:
