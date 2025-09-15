@@ -6,9 +6,7 @@ on:
       - main  # Trigger on push to main branch
 
 env:
-  IMAGE_NAME: react_movie_app_docker_image
-  DOCKER_REGISTRY: docker.io
-  REACT_APP_API_URL: https://myapp-docker-image-1022695486160.europe-west1.run.app
+  DOCKERHUB_REPO: sohampa/php-frontend-laravel
 
 jobs:
   build-and-push:
@@ -27,11 +25,17 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      # Build and push image
       - name: Build and Push Docker Image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:v1.8
-          build-args: |
-            REACT_APP_API_URL=${{ env.REACT_APP_API_URL }}
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          echo "Building image: ${{ env.DOCKERHUB_REPO }}:$IMAGE_TAG"
+
+          docker build -t ${{ env.DOCKERHUB_REPO }}:$IMAGE_TAG .
+          docker push ${{ env.DOCKERHUB_REPO }}:$IMAGE_TAG
+
+      # (Optional) Tag as "latest"
+      - name: Tag as latest
+        run: |
+          docker tag ${{ env.DOCKERHUB_REPO }}:${{ github.sha }} ${{ env.DOCKERHUB_REPO }}:latest
+          docker push ${{ env.DOCKERHUB_REPO }}:latest
