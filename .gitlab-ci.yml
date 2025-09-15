@@ -1,0 +1,32 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_HOST: tcp://docker:2375/
+  IMAGE_NAME: react_movie_app_docker_image
+  DOCKER_REGISTRY: docker.io  # Docker Hub registry
+  DOCKER_USERNAME: onkarko1106  # Your Docker Hub username
+  DOCKER_PASSWORD: onkarko1106  # Your Docker Hub password
+  # Set this variable in GitLab CI/CD settings for security, do not hardcode here
+  REACT_APP_API_URL: https://myapp-docker-image-1022695486160.europe-west1.run.app
+
+stages:
+  - build_and_push
+
+before_script:
+  - docker info
+
+# Build and Push Docker Image in a Single Stage
+build_and_push:
+  stage: build_and_push
+  script:
+    # Build the Docker image with API URL build arg
+    - docker build --build-arg REACT_APP_API_URL=$REACT_APP_API_URL -t $DOCKER_USERNAME/$IMAGE_NAME:v1.8 .
+    # Push the Docker image to Docker Hub
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin $DOCKER_REGISTRY
+    - docker push $DOCKER_USERNAME/$IMAGE_NAME:v1.8
+  # No need for saving/loading or artifact handling
