@@ -7,6 +7,7 @@ on:
 
 env:
   DOCKERHUB_REPO: sohampa/php-frontend-laravel
+  IMAGE_TAG: v1   # ✅ Fixed tag
 
 jobs:
   build-and-push:
@@ -28,14 +29,15 @@ jobs:
       # Build and push image
       - name: Build and Push Docker Image
         run: |
-          IMAGE_TAG=${{ github.sha }}
-          echo "Building image: ${{ env.DOCKERHUB_REPO }}:$IMAGE_TAG"
+          echo "Building image: ${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_TAG }}"
 
-          docker build --build-arg REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }} -t ${{ env.DOCKERHUB_REPO }}:$IMAGE_TAG .
-          docker push ${{ env.DOCKERHUB_REPO }}:$IMAGE_TAG
+          docker build --build-arg REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }} \
+            -t ${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_TAG }} .
+
+          docker push ${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_TAG }}
 
       # (Optional) Tag as "latest"
       - name: Tag as latest
         run: |
-          docker tag ${{ env.DOCKERHUB_REPO }}:${{ github.sha }} ${{ env.DOCKERHUB_REPO }}:latest
+          docker tag ${{ env.DOCKERHUB_REPO }}:${{ env.IMAGE_TAG }} ${{ env.DOCKERHUB_REPO }}:latest
           docker push ${{ env.DOCKERHUB_REPO }}:latest
