@@ -44,12 +44,15 @@ jobs:
           docker push $IMAGE
           echo "NEW_IMAGE=$IMAGE" >> $GITHUB_ENV
 
-      - name: Update ECS Task Definition
+            - name: Update ECS Task Definition
+        id: taskdef
         run: |
+          # Get existing task def JSON
           aws ecs describe-task-definition \
             --task-definition $ECS_TASK_FAMILY \
             --query taskDefinition > task-def.json
 
+          # Clean out unnecessary fields
           cat task-def.json | jq 'del(
             .taskDefinitionArn,
             .revision,
@@ -60,16 +63,23 @@ jobs:
             .registeredBy
           )' > new-task-def.json
 
+          # Inject new image
           jq --arg IMAGE "$NEW_IMAGE" \
             '.containerDefinitions[0].image = $IMAGE' new-task-def.json \
             > final-task-def.json
 
-          aws ecs register-task-definition \
-            --cli-input-json file://final-task-def.json
+          # Register new revision and capture ARN
+          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://final-task-def.json \
+            --query "taskDefinition.taskDefinitionArn" \
+            --output text)
+
+          echo "NEW_TASK_DEF_ARN=$NEW_TASK_DEF_ARN" >> $GITHUB_ENV
 
       - name: Deploy to ECS
         run: |
           aws ecs update-service \
             --cluster $ECS_CLUSTER \
             --service $ECS_SERVICE \
+            --task-definition $NEW_TASK_DEF_ARN \
             --force-new-deployment
