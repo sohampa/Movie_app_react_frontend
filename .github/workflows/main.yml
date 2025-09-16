@@ -44,7 +44,7 @@ jobs:
           docker push $IMAGE
           echo "NEW_IMAGE=$IMAGE" >> $GITHUB_ENV
 
-            - name: Update ECS Task Definition
+      - name: Update ECS Task Definition
         id: taskdef
         run: |
           # Get existing task def JSON
