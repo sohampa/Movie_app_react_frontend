@@ -15,7 +15,7 @@ env:
   ECS_CLUSTER: soham-php-laravel-app
   ECS_SERVICE: soham-php-laravel-fet-service
   ECS_TASK_FAMILY: soham-php-laravel-fet
-  REACT_APP_API_URL: http://52.23.221.1:8000
+  REACT_APP_API_URL: http://44.222.127.222:8000
 
 jobs:
   deploy:
