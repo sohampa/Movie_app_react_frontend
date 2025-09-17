@@ -15,7 +15,7 @@ env:
   ECS_CLUSTER: soham-php-laravel-app
   ECS_SERVICE: soham-php-laravel-fet-service
   ECS_TASK_FAMILY: soham-php-laravel-fet
-  REACT_APP_API_URL: http://soham-php-laravel-backend-service:8000
+  REACT_APP_API_URL: http://44.222.127.222:8000
 
 jobs:
   deploy:
@@ -42,44 +42,20 @@ jobs:
           IMAGE=${{ env.DOCKERHUB_REPO }}:${{ github.sha }}
           docker build --build-arg REACT_APP_API_URL=${{ env.REACT_APP_API_URL }} -t $IMAGE .
           docker push $IMAGE
-          echo "NEW_IMAGE=$IMAGE" >> $GITHUB_ENV
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
-      - name: Update ECS Task Definition
-        id: taskdef
-        run: |
-          # Get existing task def JSON
-          aws ecs describe-task-definition \
-            --task-definition $ECS_TASK_FAMILY \
-            --query taskDefinition > task-def.json
-
-          # Clean out unnecessary fields
-          cat task-def.json | jq 'del(
-            .taskDefinitionArn,
-            .revision,
-            .status,
-            .requiresAttributes,
-            .compatibilities,
-            .registeredAt,
-            .registeredBy
-          )' > new-task-def.json
-
-          # Inject new image
-          jq --arg IMAGE "$NEW_IMAGE" \
-            '.containerDefinitions[0].image = $IMAGE' new-task-def.json \
-            > final-task-def.json
-
-          # Register new revision and capture ARN
-          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
-            --cli-input-json file://final-task-def.json \
-            --query "taskDefinition.taskDefinitionArn" \
-            --output text)
-
-          echo "NEW_TASK_DEF_ARN=$NEW_TASK_DEF_ARN" >> $GITHUB_ENV
+      - name: Render ECS task definition
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: soham-php-laravel-fet-revision.json  # base JSON stored in repo
+          container-name: php-laravel-fet          # must match ECS container name
+          image: ${{ env.IMAGE }}
 
       - name: Deploy to ECS
-        run: |
-          aws ecs update-service \
-            --cluster $ECS_CLUSTER \
-            --service $ECS_SERVICE \
-            --task-definition $NEW_TASK_DEF_ARN \
-            --force-new-deployment
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
