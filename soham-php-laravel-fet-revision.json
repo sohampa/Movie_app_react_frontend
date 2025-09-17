@@ -1,0 +1,84 @@
+{
+    "compatibilities": [
+        "EC2",
+        "FARGATE"
+    ],
+    "containerDefinitions": [
+        {
+            "cpu": 0,
+            "environment": [],
+            "environmentFiles": [],
+            "essential": true,
+            "image": "sohampa/php-frontend-laravel:c2b9c2f89113bca7f6227214dbffe67d15b8fae7",
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/soham-php-laravel-fet",
+                    "awslogs-create-group": "true",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "ecs"
+                },
+                "secretOptions": []
+            },
+            "mountPoints": [],
+            "name": "php-laravel-fet",
+            "portMappings": [
+                {
+                    "appProtocol": "http",
+                    "containerPort": 80,
+                    "hostPort": 80,
+                    "name": "php-laravel-fet-80-tcp",
+                    "protocol": "tcp"
+                }
+            ],
+            "systemControls": [],
+            "ulimits": [],
+            "volumesFrom": []
+        }
+    ],
+    "cpu": "1024",
+    "enableFaultInjection": false,
+    "executionRoleArn": "arn:aws:iam::543816070942:role/ecsTaskExecutionRole",
+    "family": "soham-php-laravel-fet",
+    "memory": "3072",
+    "networkMode": "awsvpc",
+    "placementConstraints": [],
+    "registeredAt": "2025-09-17T06:54:23.193Z",
+    "registeredBy": "arn:aws:sts::543816070942:assumed-role/Soham-OIDC-Role/GitHubActions",
+    "requiresAttributes": [
+        {
+            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+        },
+        {
+            "name": "ecs.capability.execution-role-awslogs"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.task-iam-role"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+        },
+        {
+            "name": "ecs.capability.task-eni"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
+        }
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "revision": 15,
+    "runtimePlatform": {
+        "cpuArchitecture": "X86_64",
+        "operatingSystemFamily": "LINUX"
+    },
+    "status": "ACTIVE",
+    "taskDefinitionArn": "arn:aws:ecs:us-east-1:543816070942:task-definition/soham-php-laravel-fet:15",
+    "taskRoleArn": "arn:aws:iam::543816070942:role/ecsTaskExecutionRole",
+    "volumes": [],
+    "tags": []
+}
